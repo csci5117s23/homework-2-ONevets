@@ -1,0 +1,20 @@
+.maxheight{
+    height: 100vh;
+}
+
+.leftmenu{
+    background-color: grey;
+}
+
+.rightmenu{
+    background-color: white;
+}
+
+.addToDo{
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    border-radius: 20px;
+    bottom: 50px;
+    right: 50px;
+}

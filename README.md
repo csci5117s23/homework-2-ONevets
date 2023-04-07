@@ -3,6 +3,11 @@
 
 Instructions can be [found on canvas](https://canvas.umn.edu/courses/355584/pages/homework-2)
 
+Libraries used:
+1. Next.js
+2. Bootstrap
+3. Codehooks
+
 Please fill out all of the following sections to help us grade your submission:
 
 ## Student (to be completed individually)
