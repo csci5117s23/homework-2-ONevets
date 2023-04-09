@@ -11,12 +11,24 @@ import { useEffect, useState } from "react";
 export default function Todos({ Component, pageProps }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openModal, setOpenModal] = useState(false);
+  const [persistentTasks, setPersistentTasks] = useState([]);
+  const [onHomePage, setOnHomePage] = useState(true);
 
-  useEffect(() => {
+  async function removeTask(taskId) {
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
+      {
+        method: "DELETE",
+        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+      }
+    ).then((res) => res);
+    getTasks();
+  }
+
+  function filterCategories(category) {
     const fetchData = async () => {
       const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/?category=" + category,
         {
           method: "GET",
           headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
@@ -28,12 +40,70 @@ export default function Todos({ Component, pageProps }) {
       setLoading(false);
     };
     fetchData();
+  }
+
+  async function completeTask(task) {
+    if (task.completed === false) {
+      task.completed = true;
+    } else {
+      task.completed = false;
+    }
+
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + task._id,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
+        },
+        body: JSON.stringify({
+          _id: task._id,
+          ownerId: task.ownerId,
+          title: task.title,
+          description: task.description,
+          category: task.category,
+          completed: task.completed,
+        }),
+      }
+    ).then(getTasks());
+  }
+
+  const getTasks = async () => {
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
+      {
+        method: "GET",
+        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+      }
+    );
+    const data = await response.json();
+    // update state -- configured earlier.
+    setTasks(data);
+    setLoading(false);
+  };
+
+  const getPersistentTasks = async () => {
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
+      {
+        method: "GET",
+        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+      }
+    );
+    const data = await response.json();
+    // update state -- configured earlier.
+    setPersistentTasks(data);
+  };
+
+  useEffect(() => {
+    getTasks();
+    getPersistentTasks();
   }, []);
 
   if (loading) {
     return <div>Loading...</div>;
   } else {
-    console.log(tasks);
     return (
       <>
         <Head>
@@ -43,20 +113,32 @@ export default function Todos({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
-        <NavBar></NavBar>
+        <NavBar
+          getTasks={getTasks}
+          tasks={tasks}
+          setTasks={setTasks}
+          loading={loading}
+          setLoading={setLoading}
+          setOnHomePage={setOnHomePage}
+        ></NavBar>
         <div className={`${styles.maxheight} container-fluid text-center`}>
           <div className={`${styles.maxheight} row`}>
             <div className={`${styles.leftmenu} col`}>
-              <h1>Categories</h1>
               {/* This is a template */}
-              {tasks.map((task, key) => {
-                console.log(key);
-                return (
-                  <>
-                    <p>{task.category}</p>
-                  </>
-                );
-              })}
+              <h1>Categories</h1>
+              {onHomePage ? (
+                persistentTasks.map((task, key) => {
+                  return (
+                    <>
+                      <p onClick={() => filterCategories(task.category)}>
+                        {task.category}
+                      </p>
+                    </>
+                  );
+                })
+              ) : (
+                <p>To see full list again, Go to home on the navbar</p>
+              )}
             </div>
             <div className={`${styles.rightmenu} col-9`}>
               <h1>Tasks</h1>
@@ -70,11 +152,15 @@ export default function Todos({ Component, pageProps }) {
                       <p>{task.description}</p>
                       <input
                         type="checkbox"
-                        id="vehicle1"
-                        name="vehicle1"
-                        value="Bike"
+                        id="completedCheckbox"
+                        name="completed"
+                        defaultChecked={task.completed}
+                        onChange={(e) => completeTask(task)}
                       ></input>
-                      <label htmlFor="vehicle1"> Check to complete</label>
+                      <label htmlFor="completedCheckbox">
+                        {" "}
+                        Check to complete
+                      </label>
                       <br></br>
                       <button
                         className={`btn btn-primary`}
@@ -84,9 +170,19 @@ export default function Todos({ Component, pageProps }) {
                       >
                         Edit
                       </button>
+                      <button
+                        className={`btn btn-primary`}
+                        type="button"
+                        onClick={(e) => removeTask(task._id)}
+                      >
+                        Remove
+                      </button>
                       <EditModal
                         parentTasks={tasks}
                         parentTask={task}
+                        persistentTasks={persistentTasks}
+                        getTasks={getTasks}
+                        getPersistentTasks={getPersistentTasks}
                       ></EditModal>
                     </div>
                     <hr></hr>
@@ -102,7 +198,11 @@ export default function Todos({ Component, pageProps }) {
             >
               +
             </button>
-            <AddModal parentTasks={tasks}></AddModal>
+            <AddModal
+              persistentTasks={persistentTasks}
+              parentTasks={tasks}
+              getTasks={getTasks}
+            ></AddModal>
           </div>
         </div>
       </>

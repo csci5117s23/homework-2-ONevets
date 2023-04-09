@@ -13,10 +13,8 @@ export default function AddModal(props) {
 
   function handleCategoryClick() {
     if (wantCategory === false) {
-      console.log("wantCategory is false");
       setWantCategory(true);
     } else {
-      console.log("wantCategory is true");
       setWantCategory(false);
     }
   }
@@ -29,16 +27,15 @@ export default function AddModal(props) {
           <input
             onChange={(e) => setCategory(e.target.value)}
             type="text"
+            required
           ></input>
         </>
       );
     } else {
       return (
         <>
-          <select
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {props.parentTasks.map((task) => {
+          <select required onChange={(e) => setCategory(e.target.value)}>
+            {props.persistentTasks.map((task) => {
               return <option value={task.category}>{task.category}</option>;
             })}
           </select>
@@ -49,9 +46,6 @@ export default function AddModal(props) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    console.log(title);
-    console.log(description);
-    console.log(category);
     const fetchData = async () => {
       const response = await fetch(
         process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
@@ -59,19 +53,20 @@ export default function AddModal(props) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
+            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY
           },
           body: JSON.stringify({
             owner_id: "1",
             title: title,
             description: description,
-            category: category,
-          }),
+            completed: false,
+            category: category
+          })
         }
-      );
-      return response.json();
+      ).then((res) => res)
     };
     fetchData();
+    props.getTasks();
   }
 
   return (
@@ -109,6 +104,7 @@ export default function AddModal(props) {
                     id="title"
                     name="title"
                     aria-describedby="title"
+                    required
                     onChange={(e) => setTitle(e.target.value)}
                   ></input>
                 </div>
@@ -120,6 +116,7 @@ export default function AddModal(props) {
                     type="text"
                     className="form-control"
                     id="description"
+                    required
                     onChange={(e) => setDescription(e.target.value)}
                   ></textarea>
                 </div>

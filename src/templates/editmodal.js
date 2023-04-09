@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AddModal(props) {
   const [wantCategory, setWantCategory] = useState(false);
@@ -8,12 +8,14 @@ export default function AddModal(props) {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
 
-  function handleCategoryClick(props) {
+  useEffect(() => {
+    props.getPersistentTasks();
+  },[])
+
+  function handleCategoryClick() {
     if (wantCategory === false) {
-      console.log("wantCategory is false");
       setWantCategory(true);
     } else {
-      console.log("wantCategory is true");
       setWantCategory(false);
     }
   }
@@ -26,6 +28,7 @@ export default function AddModal(props) {
           <input
             onChange={(e) => setCategory(e.target.value)}
             type="text"
+            required
           ></input>
         </>
       );
@@ -35,8 +38,9 @@ export default function AddModal(props) {
           <select
             defaultValue={props.parentTask.category}
             onChange={(e) => setCategory(e.target.value)}
+            required
           >
-            {props.parentTasks.map((task) => {
+            {props.persistentTasks.map((task) => {
               return <option value={task.category}>{task.category}</option>;
             })}
           </select>
@@ -47,29 +51,26 @@ export default function AddModal(props) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    console.log(title);
-    console.log(description);
-    console.log(category);
+
     const fetchData = async () => {
       const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + props.parentTask._id,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
           },
           body: JSON.stringify({
-            owner_id: "1",
             title: title,
             description: description,
-            category: category,
+            category: category
           }),
         }
-      );
-      return response.json();
+      ).then((res) => res)
     };
     fetchData();
+    props.getTasks();
   }
 
   function handleCancel(e){
@@ -118,6 +119,7 @@ export default function AddModal(props) {
                     aria-describedby="title"
                     defaultValue={props.parentTask.title}
                     onChange={(e) => setTitle(e.target.value)}
+                    required
                   ></input>
                 </div>
                 <div className="mb-3">
@@ -130,6 +132,7 @@ export default function AddModal(props) {
                     id="description"
                     defaultValue={props.parentTask.description}
                     onChange={(e) => setDescription(e.target.value)}
+                    required
                   ></textarea>
                 </div>
 

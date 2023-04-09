@@ -1,11 +1,34 @@
-import Head from "next/head";
 import { Inter } from "next/font/google";
 import { SignedIn, SignIn } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
 import styles from "../styles/templates/navbar.module.css";
 import Link from "next/link";
 
-export default function Navbar() {
+export default function Navbar(props) {
+
+  const filterAll = () => {
+    props.getTasks();
+    props.setOnHomePage(true);
+  }
+
+  function filterCompleted() {
+    const fetchData = async () => {
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/completed",
+        {
+          method: "GET",
+          headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+        }
+      );
+      const data = await response.json();
+      // update state -- configured earlier.
+      props.setTasks(data);
+      props.setLoading(false);
+    };
+    fetchData();
+    props.setOnHomePage(false);
+  }
+
   return (
     <>
       <nav
@@ -29,10 +52,10 @@ export default function Navbar() {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <Link className="nav-link" href="/todos">Home</Link>
+                <a className="nav-link" onClick={filterAll}>Home</a>
               </li>
               <li className="nav-item">
-              <Link className="nav-link" href="/done">Completed</Link>
+              <a className="nav-link" onClick={filterCompleted}>Completed</a>
               </li>
               
             </ul>
