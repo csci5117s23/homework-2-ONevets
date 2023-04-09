@@ -7,12 +7,13 @@ Libraries used:
 1. Next.js
 2. Bootstrap
 3. Codehooks
+4. Yup
 
 Please fill out all of the following sections to help us grade your submission:
 
 ## Student (to be completed individually)
 
-* First Last, x500@umn.edu
+* First Last, sugia005@umn.edu
 
 ## Link to Site
 

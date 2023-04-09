@@ -2,7 +2,7 @@ import Head from "next/head";
 import { Inter } from "next/font/google";
 import { SignedIn, SignIn } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
-import styles from "../../styles/templates/navbar.module.css";
+import styles from "../styles/templates/navbar.module.css";
 import Link from "next/link";
 
 export default function Navbar() {
