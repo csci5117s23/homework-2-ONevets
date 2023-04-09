@@ -6,13 +6,15 @@ import styles from "../styles/to-do.module.css";
 import NavBar from "../templates/navbar";
 import AddModal from "../templates/addmodal";
 import EditModal from "../templates/editmodal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, componentDidMount } from "react";
 
 export default function Todos({ Component, pageProps }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [persistentTasks, setPersistentTasks] = useState([]);
+  const [uniqueCategories, setUniqueCategories] = useState([]);
   const [onHomePage, setOnHomePage] = useState(true);
+  const [taskToEdit, setTaskToEdit] = useState([]);
 
   async function removeTask(taskId) {
     const response = await fetch(
@@ -66,7 +68,20 @@ export default function Todos({ Component, pageProps }) {
           completed: task.completed,
         }),
       }
-    ).then(getTasks());
+    );
+  }
+
+  const getTask = async (taskId) => {
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
+      {
+        method: "GET",
+        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+      }
+    );
+    const data = await response.json();
+    setTaskToEdit(data);
+    console.log(taskToEdit);
   }
 
   const getTasks = async () => {
@@ -96,10 +111,24 @@ export default function Todos({ Component, pageProps }) {
     setPersistentTasks(data);
   };
 
+  function getUniqueCategories(arr) {
+    let newArr = [];
+    arr.forEach((item) => {
+      newArr.push(item.category);
+    });
+    const setData = new Set(newArr);
+    console.log(Array.from(setData));
+    setUniqueCategories(Array.from(setData));
+  }
+
   useEffect(() => {
     getTasks();
-    getPersistentTasks();
   }, []);
+
+  useEffect(() => {
+    getPersistentTasks();
+    getUniqueCategories(tasks);
+  }, [loading, tasks.length, uniqueCategories.length]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -127,12 +156,10 @@ export default function Todos({ Component, pageProps }) {
               {/* This is a template */}
               <h1>Categories</h1>
               {onHomePage ? (
-                persistentTasks.map((task, key) => {
+                uniqueCategories.map((task, key) => {
                   return (
                     <>
-                      <p onClick={() => filterCategories(task.category)}>
-                        {task.category}
-                      </p>
+                      <p onClick={() => filterCategories(task)}>{task}</p>
                     </>
                   );
                 })
@@ -166,7 +193,8 @@ export default function Todos({ Component, pageProps }) {
                         className={`btn btn-primary`}
                         type="button"
                         data-bs-toggle="modal"
-                        data-bs-target={`#modal-${task._id}`}
+                        onClick={() => getTask(task._id)}
+                        data-bs-target={`#modal`}
                       >
                         Edit
                       </button>
@@ -177,18 +205,16 @@ export default function Todos({ Component, pageProps }) {
                       >
                         Remove
                       </button>
-                      <EditModal
-                        parentTasks={tasks}
-                        parentTask={task}
-                        persistentTasks={persistentTasks}
-                        getTasks={getTasks}
-                        getPersistentTasks={getPersistentTasks}
-                      ></EditModal>
                     </div>
                     <hr></hr>
                   </>
                 );
               })}
+              <EditModal
+                taskToEdit = {taskToEdit}
+                uniqueCategories = {uniqueCategories}
+                getTasks={getTasks}
+              ></EditModal>
             </div>
             <button
               className={`${styles.addToDo} btn btn-primary`}
@@ -199,7 +225,7 @@ export default function Todos({ Component, pageProps }) {
               +
             </button>
             <AddModal
-              persistentTasks={persistentTasks}
+              uniqueCategories = {uniqueCategories}
               parentTasks={tasks}
               getTasks={getTasks}
             ></AddModal>

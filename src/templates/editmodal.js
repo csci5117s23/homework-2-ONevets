@@ -8,9 +8,6 @@ export default function AddModal(props) {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
 
-  useEffect(() => {
-    props.getPersistentTasks();
-  },[])
 
   function handleCategoryClick() {
     if (wantCategory === false) {
@@ -36,12 +33,12 @@ export default function AddModal(props) {
       return (
         <>
           <select
-            defaultValue={props.parentTask.category}
+            defaultValue={props.taskToEdit.category}
             onChange={(e) => setCategory(e.target.value)}
             required
           >
-            {props.persistentTasks.map((task) => {
-              return <option value={task.category}>{task.category}</option>;
+            {props.uniqueCategories.map((category) => {
+              return <option value={category}>{category}</option>;
             })}
           </select>
         </>
@@ -54,7 +51,7 @@ export default function AddModal(props) {
 
     const fetchData = async () => {
       const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + props.parentTask._id,
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + props.taskToEdit._id,
         {
           method: "PUT",
           headers: {
@@ -64,6 +61,7 @@ export default function AddModal(props) {
           body: JSON.stringify({
             title: title,
             description: description,
+            completed: props.taskToEdit.completed,
             category: category
           }),
         }
@@ -75,16 +73,13 @@ export default function AddModal(props) {
 
   function handleCancel(e){
     document.getElementById("editForm").reset();
-    setTitle(props.parentTask.title);
-    setDescription(props.parentTask.description);
-    setCategory(props.parentTask.category);
   }
 
   return (
     <>
       <div
         className="modal fade"
-        id={`modal-${props.parentTask._id}`}
+        id={`modal`}
         tabIndex="-1"
         aria-labelledby="exampleModalLabel"
         aria-hidden="true"
@@ -117,7 +112,7 @@ export default function AddModal(props) {
                     id="title"
                     name="title"
                     aria-describedby="title"
-                    defaultValue={props.parentTask.title}
+                    defaultValue={props.taskToEdit.title}
                     onChange={(e) => setTitle(e.target.value)}
                     required
                   ></input>
@@ -130,7 +125,7 @@ export default function AddModal(props) {
                     type="text"
                     className="form-control"
                     id="description"
-                    defaultValue={props.parentTask.description}
+                    defaultValue={props.taskToEdit.description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
                   ></textarea>

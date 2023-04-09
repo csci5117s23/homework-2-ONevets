@@ -35,8 +35,8 @@ export default function AddModal(props) {
       return (
         <>
           <select required onChange={(e) => setCategory(e.target.value)}>
-            {props.persistentTasks.map((task) => {
-              return <option value={task.category}>{task.category}</option>;
+            {props.uniqueCategories.map((category) => {
+              return <option value={category}>{category}</option>;
             })}
           </select>
         </>
@@ -69,6 +69,10 @@ export default function AddModal(props) {
     props.getTasks();
   }
 
+  function handleButton(){
+    document.getElementById("addForm").reset();
+  }
+
   return (
     <>
       <div
@@ -80,7 +84,7 @@ export default function AddModal(props) {
       >
         <div className="modal-dialog">
           <div className="modal-content">
-            <form onSubmit={(e) => handleSubmit(e)}>
+            <form id="addForm" onSubmit={(e) => handleSubmit(e)}>
               <div className="modal-header">
                 <h1 className="modal-title fs-5" id="addModalLabel">
                   Create a reminder
@@ -138,10 +142,11 @@ export default function AddModal(props) {
                   type="button"
                   className="btn btn-secondary"
                   data-bs-dismiss="modal"
+                  onClick={handleButton}
                 >
                   Close
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button onClick={handleButton} type="submit" className="btn btn-primary">
                   Add
                 </button>
               </div>
