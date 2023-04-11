@@ -4,18 +4,10 @@ import { useState, useEffect } from "react";
 
 export default function AddModal(props) {
   const [wantCategory, setWantCategory] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [title, setTitle] = useState(props.taskToEdit.title);
+  const [description, setDescription] = useState(props.taskToEdit.description);
+  const [category, setCategory] = useState(props.taskToEdit.category);
 
-
-  function handleCategoryClick() {
-    if (wantCategory === false) {
-      setWantCategory(true);
-    } else {
-      setWantCategory(false);
-    }
-  }
 
   function handleCategory() {
     if (wantCategory === true) {
@@ -25,7 +17,6 @@ export default function AddModal(props) {
           <input
             onChange={(e) => setCategory(e.target.value)}
             type="text"
-            required
           ></input>
         </>
       );
@@ -34,8 +25,8 @@ export default function AddModal(props) {
         <>
           <select
             defaultValue={props.taskToEdit.category}
+            key={props.taskToEdit.category}
             onChange={(e) => setCategory(e.target.value)}
-            required
           >
             {props.uniqueCategories.map((category) => {
               return <option value={category}>{category}</option>;
@@ -51,7 +42,9 @@ export default function AddModal(props) {
 
     const fetchData = async () => {
       const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + props.taskToEdit._id,
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT +
+          "/toDo/" +
+          props.taskToEdit._id,
         {
           method: "PUT",
           headers: {
@@ -59,22 +52,30 @@ export default function AddModal(props) {
             "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
           },
           body: JSON.stringify({
+            _id: props.taskToEdit._id,
+            owner_id: props.taskToEdit.owner_id,
             title: title,
             description: description,
             completed: props.taskToEdit.completed,
-            category: category
+            category: category,
           }),
         }
-      ).then((res) => res)
+      ).then((res) => res);
     };
     fetchData();
     props.getTasks();
   }
 
-  function handleCancel(e){
+  function handleCancel(e) {
     document.getElementById("editForm").reset();
+    props.setModalOpen(false);
   }
 
+  useEffect(() => {
+    setTitle(props.taskToEdit.title);
+    setDescription(props.taskToEdit.description);
+    setCategory(props.taskToEdit.category);
+  }, [props.modalOpen]);
   return (
     <>
       <div
@@ -83,7 +84,7 @@ export default function AddModal(props) {
         tabIndex="-1"
         aria-labelledby="exampleModalLabel"
         aria-hidden="true"
-        data-bs-backdrop="static" 
+        data-bs-backdrop="static"
         data-bs-keyboard="false"
       >
         <div className="modal-dialog">
@@ -114,7 +115,6 @@ export default function AddModal(props) {
                     aria-describedby="title"
                     defaultValue={props.taskToEdit.title}
                     onChange={(e) => setTitle(e.target.value)}
-                    required
                   ></input>
                 </div>
                 <div className="mb-3">
@@ -127,14 +127,13 @@ export default function AddModal(props) {
                     id="description"
                     defaultValue={props.taskToEdit.description}
                     onChange={(e) => setDescription(e.target.value)}
-                    required
                   ></textarea>
                 </div>
 
                 <div className="mb-3">
                   <input
                     type="checkbox"
-                    onChange={handleCategoryClick}
+                    onChange={() => setWantCategory(!wantCategory)}
                     checked={wantCategory}
                   ></input>
                   <label className="form-label">Create new category?</label>
@@ -152,7 +151,13 @@ export default function AddModal(props) {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                  type="submit"
+                  className="btn btn-primary"
+                  onClick={() => props.setModalOpen(false)}
+                >
                   Save
                 </button>
               </div>

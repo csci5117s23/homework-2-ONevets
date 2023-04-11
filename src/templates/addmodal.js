@@ -27,14 +27,13 @@ export default function AddModal(props) {
           <input
             onChange={(e) => setCategory(e.target.value)}
             type="text"
-            required
           ></input>
         </>
       );
     } else {
       return (
         <>
-          <select required onChange={(e) => setCategory(e.target.value)}>
+          <select onChange={(e) => setCategory(e.target.value)}>
             {props.uniqueCategories.map((category) => {
               return <option value={category}>{category}</option>;
             })}
@@ -53,23 +52,23 @@ export default function AddModal(props) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY
+            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
           },
           body: JSON.stringify({
             owner_id: "1",
             title: title,
             description: description,
             completed: false,
-            category: category
-          })
+            category: category,
+          }),
         }
-      ).then((res) => res)
+      ).then((res) => res);
     };
     fetchData();
     props.getTasks();
   }
 
-  function handleButton(){
+  function handleButton() {
     document.getElementById("addForm").reset();
   }
 
@@ -108,7 +107,6 @@ export default function AddModal(props) {
                     id="title"
                     name="title"
                     aria-describedby="title"
-                    required
                     onChange={(e) => setTitle(e.target.value)}
                   ></input>
                 </div>
@@ -120,7 +118,6 @@ export default function AddModal(props) {
                     type="text"
                     className="form-control"
                     id="description"
-                    required
                     onChange={(e) => setDescription(e.target.value)}
                   ></textarea>
                 </div>
@@ -146,7 +143,13 @@ export default function AddModal(props) {
                 >
                   Close
                 </button>
-                <button onClick={handleButton} type="submit" className="btn btn-primary">
+                <button
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                  onClick={handleButton}
+                  type="submit"
+                  className="btn btn-primary"
+                >
                   Add
                 </button>
               </div>

@@ -11,10 +11,10 @@ import { useEffect, useState, componentDidMount } from "react";
 export default function Todos({ Component, pageProps }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [persistentTasks, setPersistentTasks] = useState([]);
   const [uniqueCategories, setUniqueCategories] = useState([]);
   const [onHomePage, setOnHomePage] = useState(true);
   const [taskToEdit, setTaskToEdit] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
 
   async function removeTask(taskId) {
     const response = await fetch(
@@ -45,11 +45,6 @@ export default function Todos({ Component, pageProps }) {
   }
 
   async function completeTask(task) {
-    if (task.completed === false) {
-      task.completed = true;
-    } else {
-      task.completed = false;
-    }
 
     const response = await fetch(
       process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + task._id,
@@ -65,7 +60,7 @@ export default function Todos({ Component, pageProps }) {
           title: task.title,
           description: task.description,
           category: task.category,
-          completed: task.completed,
+          completed: !task.completed,
         }),
       }
     );
@@ -81,6 +76,7 @@ export default function Todos({ Component, pageProps }) {
     );
     const data = await response.json();
     setTaskToEdit(data);
+    setModalOpen(true);
     console.log(taskToEdit);
   }
 
@@ -98,19 +94,6 @@ export default function Todos({ Component, pageProps }) {
     setLoading(false);
   };
 
-  const getPersistentTasks = async () => {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    // update state -- configured earlier.
-    setPersistentTasks(data);
-  };
-
   function getUniqueCategories(arr) {
     let newArr = [];
     arr.forEach((item) => {
@@ -126,7 +109,6 @@ export default function Todos({ Component, pageProps }) {
   }, []);
 
   useEffect(() => {
-    getPersistentTasks();
     getUniqueCategories(tasks);
   }, [loading, tasks.length, uniqueCategories.length]);
 
@@ -214,6 +196,8 @@ export default function Todos({ Component, pageProps }) {
                 taskToEdit = {taskToEdit}
                 uniqueCategories = {uniqueCategories}
                 getTasks={getTasks}
+                modalOpen={modalOpen}
+                setModalOpen={setModalOpen}
               ></EditModal>
             </div>
             <button
