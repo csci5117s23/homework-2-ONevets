@@ -38,14 +38,13 @@ async function getCompleted(req, res) {
 
 async function getCategories(req, res) {
   const conn = await Datastore.open();    
-  const query = {"categories": req.query.category};
     const options = {
-        filter: query,
+        filter: {"category": req.params.category}
     }
     conn.getMany('toDo', options).json(res); 
 }
 
-app.get('/toDo/?category=:category', getCategories);
+app.get('/toDo/category/:category', getCategories);
 
 app.get('/toDo/completed', getCompleted);
 

@@ -7,14 +7,14 @@
         "title": "dsadsadadsa",
         "description": "yea pls work",
         "category": "sadsadada",
-        "completed": true
+        "completed": false
       },
       "1876f04a9f9-7x0bz0goqyrrnx": {
         "_id": "1876f04a9f9-7x0bz0goqyrrnx",
         "title": "fshgbsdhnggfngfn",
         "description": "cfvnbvcnbvcnvbcn",
-        "category": "sadsadada",
-        "completed": true
+        "completed": true,
+        "category": "yea"
       }
     }
   ],

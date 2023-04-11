@@ -4,31 +4,7 @@ const inter = Inter({ subsets: ["latin"] });
 import styles from "../styles/templates/navbar.module.css";
 import Link from "next/link";
 
-export default function Navbar(props) {
-
-  const filterAll = () => {
-    props.getTasks();
-    props.setOnHomePage(true);
-  }
-
-  function filterCompleted() {
-    const fetchData = async () => {
-      const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/completed",
-        {
-          method: "GET",
-          headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-        }
-      );
-      const data = await response.json();
-      // update state -- configured earlier.
-      props.setTasks(data);
-      props.setLoading(false);
-    };
-    fetchData();
-    props.setOnHomePage(false);
-  }
-
+export default function Navbar() {
   return (
     <>
       <nav
@@ -52,21 +28,26 @@ export default function Navbar(props) {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <a className="nav-link" onClick={filterAll}>Home</a>
+                <Link className="nav-link" href="/todos">
+                  Home
+                </Link>
               </li>
               <li className="nav-item">
-              <a className="nav-link" onClick={filterCompleted}>Completed</a>
+                <Link className="nav-link" href="/completed">
+                  Completed
+                </Link>
               </li>
-              
             </ul>
             <ul className={`navbar-nav ms-auto`}>
-                <li className={`nav-item`}>
-                    <a className="nav-link">Name here</a>
-                </li>
-                <li className="nav-item">
-                    <Link className="nav-link" href="/">Sign out</Link>
-                </li>
-              </ul>
+              <li className={`nav-item`}>
+                <a className="nav-link">Name here</a>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" href="/">
+                  Sign out
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
       </nav>

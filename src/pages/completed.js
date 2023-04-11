@@ -8,7 +8,7 @@ import AddModal from "../templates/addmodal";
 import EditModal from "../templates/editmodal";
 import { useEffect, useState, componentDidMount } from "react";
 
-export default function Todos({ Component, pageProps }) {
+export default function Completed({ Component, pageProps }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uniqueCategories, setUniqueCategories] = useState([]);
@@ -62,6 +62,16 @@ export default function Todos({ Component, pageProps }) {
     );
   }
 
+  function getUniqueCategories(arr) {
+    let newArr = [];
+    arr.forEach((item) => {
+      newArr.push(item.category);
+    });
+    const setData = new Set(newArr);
+    console.log(Array.from(setData));
+    setUniqueCategories(Array.from(setData));
+  }
+
   const getTask = async (taskId) => {
     const response = await fetch(
       process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
@@ -76,28 +86,21 @@ export default function Todos({ Component, pageProps }) {
     console.log(taskToEdit);
   };
 
-  const getTasks = async () => {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    // update state -- configured earlier.
-    setTasks(data);
-    setLoading(false);
-  };
- 
-  function getUniqueCategories(arr) {
-    let newArr = [];
-    arr.forEach((item) => {
-      newArr.push(item.category);
-    });
-    const setData = new Set(newArr);
-    console.log(Array.from(setData));
-    setUniqueCategories(Array.from(setData));
+  function getTasks() {
+    const fetchData = async () => {
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/completed",
+        {
+          method: "GET",
+          headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+        }
+      );
+      const data = await response.json();
+      // update state -- configured earlier.
+      setTasks(data);
+      setLoading(false);
+    };
+    fetchData();
   }
 
   useEffect(() => {
