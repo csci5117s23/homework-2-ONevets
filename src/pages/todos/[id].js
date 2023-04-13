@@ -12,49 +12,40 @@ export default function EditToDos() {
   const router = useRouter();
   const routerQuery = router.query;
   const [wantCategory, setWantCategory] = useState(false);
+  const [uniqueCategories, setUniqueCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [taskToEdit, setTaskToEdit] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
 
-  // function handleCategory() {
-    
-  //   if (wantCategory === true) {
-  //     return (
-  //       <>
-  //         <label>Insert category name here</label> <br></br>
-  //         <input
-  //           onChange={(e) => setCategory(e.target.value)}
-  //           type="text"
-  //         ></input>
-  //       </>
-  //     );
-  //   } else {
-  //     return (
-  //       <>
-  //         <select
-  //           defaultValue={taskToEdit.category}
-  //           key={taskToEdit.category}
-  //           onChange={(e) => setCategory(e.target.value)}
-  //         >
-  //           {uniqueCategories.map((category) => {
-  //             return <option value={category}>{category}</option>;
-  //           })}
-  //         </select>
-  //       </>
-  //     );
-  //   }
-  // }
-
-  async function filterCategories(category) {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/category/" + category,
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    // update state -- configured earlier.
-    setLoading(false);
+  function handleCategory() {
+    console.log(uniqueCategories);
+    if (wantCategory === true) {
+      return (
+        <>
+          <label>Insert category name here</label> <br></br>
+          <input
+            onChange={(e) => setCategory(e.target.value)}
+            type="text"
+          ></input>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {uniqueCategories.map((category) => {
+              return <option value={category}>{category}</option>;
+            })}
+          </select>
+        </>
+      );
+    }
   }
 
   const getTask = async (taskId) => {
@@ -67,17 +58,75 @@ export default function EditToDos() {
     );
     const data = await response.json();
     setTaskToEdit(data);
+    setTitle(data.title);
+    setDescription(data.description);
+    setCategory(data.category);
     setLoading(false);
     console.log(taskToEdit);
   };
 
+  const getTasks = async () => {
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
+      {
+        method: "GET",
+        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
+      }
+    );
+    const data = await response.json();
+    // update state -- configured earlier.
+    setTasks(data);
+    setLoading(false);
+  };
+
+  function getUniqueCategories(arr) {
+    let newArr = [];
+    arr.forEach((item) => {
+      newArr.push(item.category);
+    });
+    const setData = new Set(newArr);
+    console.log(Array.from(setData));
+    setUniqueCategories(Array.from(setData));
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    const fetchData = async () => {
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_DB_API_ENDPOINT +
+          "/toDo/" + taskToEdit._id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
+          },
+          body: JSON.stringify({
+            _id: taskToEdit._id,
+            owner_id: taskToEdit.owner_id,
+            title: title,
+            description: description,
+            completed: taskToEdit.completed,
+            category: category,
+          }),
+        }
+      ).then((res) => res);
+    };
+    fetchData();
+
+    // window.location.href = "/todos";
+  }
+
   useEffect(() => {
-    console.log(routerQuery);
     getTask(routerQuery.id);
-    // console.log(routerQuery.uniqueCategories);
-    // remove this
-    // setLoading(false);
+    getTasks();
   }, []);
+
+  useEffect(() => {
+    getUniqueCategories(tasks);
+    
+  }, [tasks.length]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -112,8 +161,8 @@ export default function EditToDos() {
                     id="title"
                     name="title"
                     aria-describedby="title"
-                    defaultValue={taskToEdit.title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    defaultValue={title}
+                    onChange={(e) => {console.log(title); setTitle(e.target.value);}}
                   ></input>
                 </div>
                 <div className="mb-3">
@@ -124,7 +173,7 @@ export default function EditToDos() {
                     type="text"
                     className="form-control"
                     id="description"
-                    defaultValue={taskToEdit.description}
+                    defaultValue={description}
                     onChange={(e) => setDescription(e.target.value)}
                   ></textarea>
                 </div>
@@ -137,15 +186,13 @@ export default function EditToDos() {
                   ></input>
                   <label className="form-label">Create new category?</label>
                   <br></br>
-                  {/* {handleCategory()} */}
+                  {handleCategory()}
                 </div>
               </div>
 
               <div className="modal-footer">
                 <Link href="/todos">Cancel</Link>
                 <button
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
                   type="submit"
                   className="btn btn-primary"
                 >

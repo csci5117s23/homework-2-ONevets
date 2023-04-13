@@ -6,7 +6,8 @@ import styles from "../styles/to-do.module.css";
 import NavBar from "../templates/navbar";
 import AddModal from "../templates/addmodal";
 import EditModal from "../templates/editmodal";
-import { useEffect, useState, componentDidMount } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Completed({ Component, pageProps }) {
   const [tasks, setTasks] = useState([]);
@@ -123,19 +124,13 @@ export default function Completed({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
-        <NavBar
-          getTasks={getTasks}
-          tasks={tasks}
-          setTasks={setTasks}
-          loading={loading}
-          setLoading={setLoading}
-          setOnHomePage={setOnHomePage}
-        ></NavBar>
+        <NavBar></NavBar>
         <div className={`${styles.maxheight} container-fluid text-center`}>
           <div className={`${styles.maxheight} row`}>
             <div className={`${styles.leftmenu} col`}>
               {/* This is a template */}
               <h1>Categories</h1>
+              <h2 onClick={getTasks}>Reset</h2>
               {onHomePage ? (
                 uniqueCategories.map((task, key) => {
                   return (
@@ -170,15 +165,16 @@ export default function Completed({ Component, pageProps }) {
                         Check to complete
                       </label>
                       <br></br>
-                      <button
-                        className={`btn btn-primary`}
-                        type="button"
-                        data-bs-toggle="modal"
-                        onClick={() => getTask(task._id)}
-                        data-bs-target={`#modal`}
+                      <Link
+                        href={{
+                          pathname: `todos/[id]`,
+                          query: {
+                            id: task._id
+                          }
+                        }}
                       >
                         Edit
-                      </button>
+                      </Link>
                       <button
                         className={`btn btn-primary`}
                         type="button"

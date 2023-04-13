@@ -14,8 +14,6 @@ export default function Todos({ Component, pageProps }) {
   const [loading, setLoading] = useState(true);
   const [uniqueCategories, setUniqueCategories] = useState([]);
   const [onHomePage, setOnHomePage] = useState(true);
-  const [taskToEdit, setTaskToEdit] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
 
   async function removeTask(taskId) {
     const response = await fetch(
@@ -39,7 +37,6 @@ export default function Todos({ Component, pageProps }) {
     const data = await response.json();
     // update state -- configured earlier.
     setTasks(data);
-    setLoading(false);
   }
 
   async function completeTask(task) {
@@ -63,20 +60,6 @@ export default function Todos({ Component, pageProps }) {
     );
   }
 
-  const getTask = async (taskId) => {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    setTaskToEdit(data);
-    setModalOpen(true);
-    console.log(taskToEdit);
-  };
-
   const getTasks = async () => {
     const response = await fetch(
       process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
@@ -90,7 +73,7 @@ export default function Todos({ Component, pageProps }) {
     setTasks(data);
     setLoading(false);
   };
- 
+
   function getUniqueCategories(arr) {
     let newArr = [];
     arr.forEach((item) => {
@@ -107,7 +90,7 @@ export default function Todos({ Component, pageProps }) {
 
   useEffect(() => {
     getUniqueCategories(tasks);
-  }, [loading, tasks.length, uniqueCategories.length]);
+  }, [loading, uniqueCategories.length]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -121,19 +104,12 @@ export default function Todos({ Component, pageProps }) {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
-        <NavBar
-          getTasks={getTasks}
-          tasks={tasks}
-          setTasks={setTasks}
-          loading={loading}
-          setLoading={setLoading}
-          setOnHomePage={setOnHomePage}
-        ></NavBar>
+        <NavBar></NavBar>
         <div className={`${styles.maxheight} container-fluid text-center`}>
           <div className={`${styles.maxheight} row`}>
             <div className={`${styles.leftmenu} col`}>
-              {/* This is a template */}
               <h1>Categories</h1>
+              <h2 onClick={getTasks}>Reset</h2>
               {onHomePage ? (
                 uniqueCategories.map((task, key) => {
                   return (
@@ -168,11 +144,20 @@ export default function Todos({ Component, pageProps }) {
                         Check to complete
                       </label>
                       <br></br>
-                      <Link href={`todos/${task._id}`}>Edit</Link>
+                      <Link
+                        href={{
+                          pathname: `todos/[id]`,
+                          query: {
+                            id: task._id
+                          }
+                        }}
+                      >
+                        Edit
+                      </Link>
                       <button
                         className={`btn btn-primary`}
                         type="button"
-                        onClick={(e) => removeTask(task._id)}
+                        onClick={() => removeTask(task._id)}
                       >
                         Remove
                       </button>
@@ -181,13 +166,6 @@ export default function Todos({ Component, pageProps }) {
                   </>
                 );
               })}
-              <EditModal
-                taskToEdit={taskToEdit}
-                uniqueCategories={uniqueCategories}
-                getTasks={getTasks}
-                modalOpen={modalOpen}
-                setModalOpen={setModalOpen}
-              ></EditModal>
             </div>
             <button
               className={`${styles.addToDo} btn btn-primary`}
