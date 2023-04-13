@@ -1,34 +1,48 @@
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { Inter } from "next/font/google";
 import { SignedIn, SignIn } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
-import styles from "../styles/to-do.module.css";
-import NavBar from "../templates/navbar";
-import AddModal from "../templates/addmodal";
-import EditModal from "../templates/editmodal";
-import { useEffect, useState, componentDidMount } from "react";
+import styles from "../../styles/to-do.module.css";
+import NavBar from "../../templates/navbar";
+import { useEffect, useState } from "react";
 
-export default function Todos({ Component, pageProps }) {
+export default function EditToDos() {
   const router = useRouter();
-  const taskId = router.query;
-  const [tasks, setTasks] = useState([]);
+  const routerQuery = router.query;
+  const [wantCategory, setWantCategory] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [uniqueCategories, setUniqueCategories] = useState([]);
-  const [onHomePage, setOnHomePage] = useState(true);
   const [taskToEdit, setTaskToEdit] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
 
-  async function removeTask(taskId) {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
-      {
-        method: "DELETE",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    ).then((res) => res);
-    getTasks();
-  }
+  // function handleCategory() {
+    
+  //   if (wantCategory === true) {
+  //     return (
+  //       <>
+  //         <label>Insert category name here</label> <br></br>
+  //         <input
+  //           onChange={(e) => setCategory(e.target.value)}
+  //           type="text"
+  //         ></input>
+  //       </>
+  //     );
+  //   } else {
+  //     return (
+  //       <>
+  //         <select
+  //           defaultValue={taskToEdit.category}
+  //           key={taskToEdit.category}
+  //           onChange={(e) => setCategory(e.target.value)}
+  //         >
+  //           {uniqueCategories.map((category) => {
+  //             return <option value={category}>{category}</option>;
+  //           })}
+  //         </select>
+  //       </>
+  //     );
+  //   }
+  // }
 
   async function filterCategories(category) {
     const response = await fetch(
@@ -40,29 +54,7 @@ export default function Todos({ Component, pageProps }) {
     );
     const data = await response.json();
     // update state -- configured earlier.
-    setTasks(data);
     setLoading(false);
-  }
-
-  async function completeTask(task) {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + task._id,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
-        },
-        body: JSON.stringify({
-          _id: task._id,
-          ownerId: task.ownerId,
-          title: task.title,
-          description: task.description,
-          category: task.category,
-          completed: !task.completed,
-        }),
-      }
-    );
   }
 
   const getTask = async (taskId) => {
@@ -75,12 +67,16 @@ export default function Todos({ Component, pageProps }) {
     );
     const data = await response.json();
     setTaskToEdit(data);
-    setModalOpen(true);
+    setLoading(false);
     console.log(taskToEdit);
   };
 
   useEffect(() => {
-    getTask(taskId);
+    console.log(routerQuery);
+    getTask(routerQuery.id);
+    // console.log(routerQuery.uniqueCategories);
+    // remove this
+    // setLoading(false);
   }, []);
 
   if (loading) {
@@ -96,12 +92,6 @@ export default function Todos({ Component, pageProps }) {
         </Head>
 
         <NavBar
-          getTasks={getTasks}
-          tasks={tasks}
-          setTasks={setTasks}
-          loading={loading}
-          setLoading={setLoading}
-          setOnHomePage={setOnHomePage}
         ></NavBar>
         <div className={`${styles.maxheight} container-fluid text-center`}>
         <form id="editForm" onSubmit={(e) => handleSubmit(e)}>
@@ -109,12 +99,6 @@ export default function Todos({ Component, pageProps }) {
                 <h1 className="modal-title fs-5" id="editModalLabel">
                   Edit a reminder
                 </h1>
-                <button
-                  type="button"
-                  className="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
               </div>
 
               <div className="modal-body">
@@ -128,7 +112,7 @@ export default function Todos({ Component, pageProps }) {
                     id="title"
                     name="title"
                     aria-describedby="title"
-                    defaultValue={props.taskToEdit.title}
+                    defaultValue={taskToEdit.title}
                     onChange={(e) => setTitle(e.target.value)}
                   ></input>
                 </div>
@@ -140,7 +124,7 @@ export default function Todos({ Component, pageProps }) {
                     type="text"
                     className="form-control"
                     id="description"
-                    defaultValue={props.taskToEdit.description}
+                    defaultValue={taskToEdit.description}
                     onChange={(e) => setDescription(e.target.value)}
                   ></textarea>
                 </div>
@@ -153,25 +137,17 @@ export default function Todos({ Component, pageProps }) {
                   ></input>
                   <label className="form-label">Create new category?</label>
                   <br></br>
-                  {handleCategory()}
+                  {/* {handleCategory()} */}
                 </div>
               </div>
 
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  data-bs-dismiss="modal"
-                  onClick={(e) => handleCancel(e)}
-                >
-                  Cancel
-                </button>
+                <Link href="/todos">Cancel</Link>
                 <button
                   data-bs-dismiss="modal"
                   aria-label="Close"
                   type="submit"
                   className="btn btn-primary"
-                  onClick={() => props.setModalOpen(false)}
                 >
                   Save
                 </button>

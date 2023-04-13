@@ -6,7 +6,8 @@ import styles from "../styles/to-do.module.css";
 import NavBar from "../templates/navbar";
 import AddModal from "../templates/addmodal";
 import EditModal from "../templates/editmodal";
-import { useEffect, useState, componentDidMount } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Todos({ Component, pageProps }) {
   const [tasks, setTasks] = useState([]);
@@ -167,15 +168,7 @@ export default function Todos({ Component, pageProps }) {
                         Check to complete
                       </label>
                       <br></br>
-                      <button
-                        className={`btn btn-primary`}
-                        type="button"
-                        data-bs-toggle="modal"
-                        onClick={() => getTask(task._id)}
-                        data-bs-target={`#modal`}
-                      >
-                        Edit
-                      </button>
+                      <Link href={`todos/${task._id}`}>Edit</Link>
                       <button
                         className={`btn btn-primary`}
                         type="button"
