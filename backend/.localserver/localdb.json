@@ -2,19 +2,12 @@
   [
     "toDo",
     {
-      "1876f048dff-phnti1qtcjns81": {
-        "_id": "1876f048dff-phnti1qtcjns81",
-        "title": "dsadsadadsa",
-        "description": "yea pls work",
-        "category": "sadsadada",
-        "completed": false
-      },
-      "1876f04a9f9-7x0bz0goqyrrnx": {
-        "_id": "1876f04a9f9-7x0bz0goqyrrnx",
-        "title": "fshgbsdhnggfngfn",
-        "description": "cfvnbvcnbvcnvbcn",
-        "completed": true,
-        "category": "yea"
+      "187765d1059-tutzwy8xfc21hq": {
+        "_id": "187765d1059-tutzwy8xfc21hq",
+        "title": "Testing",
+        "description": "Testing details",
+        "category": "123",
+        "completed": true
       }
     }
   ],

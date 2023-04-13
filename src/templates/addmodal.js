@@ -3,21 +3,14 @@ import { Inter } from "next/font/google";
 import { SignedIn, SignIn } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
 import Link from "next/link";
-import { useState } from "react";
+import styles from "../styles/templates/addmodal.module.css";
+import { useState, useEffect } from "react";
 
 export default function AddModal(props) {
   const [wantCategory, setWantCategory] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-
-  function handleCategoryClick() {
-    if (wantCategory === false) {
-      setWantCategory(true);
-    } else {
-      setWantCategory(false);
-    }
-  }
+  const [category, setCategory] = useState(props.uniqueCategories[0]);
 
   function handleCategory() {
     if (wantCategory === true) {
@@ -33,15 +26,24 @@ export default function AddModal(props) {
     } else {
       return (
         <>
-          <select onChange={(e) => setCategory(e.target.value)}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
             {props.uniqueCategories.map((category) => {
-              return <option value={category}>{category}</option>;
+              return <option className={styles.categoryOption} value={category}>{category}</option>;
             })}
           </select>
         </>
       );
     }
   }
+
+  useEffect(() => {
+    handleCategory();
+    setCategory(props.uniqueCategories[0]);
+  }, [wantCategory]);
+
+  useEffect(() => {
+    setCategory(props.uniqueCategories[0]);
+  }, []);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -125,8 +127,7 @@ export default function AddModal(props) {
                 <div className="mb-3">
                   <input
                     type="checkbox"
-                    onChange={handleCategoryClick}
-                    checked={wantCategory}
+                    onChange={() => setWantCategory(!wantCategory)}
                   ></input>
                   <label className="form-label">Create new category?</label>
                   <br></br>
