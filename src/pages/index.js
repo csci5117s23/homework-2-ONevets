@@ -19,12 +19,8 @@ export default function Home({ Component, pageProps }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <SignedIn>
-          <RedirectToSignIn redirectUrl="/todos"/>
-        </SignedIn>
-
         <SignedOut>
-          <RedirectToSignIn />
+          <RedirectToSignIn redirectUrl="/todos"/>
         </SignedOut>
       </main>
     </>
