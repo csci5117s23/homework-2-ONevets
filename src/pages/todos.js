@@ -75,12 +75,12 @@ export default function Todos() {
           <div className={`${styles.maxheight} row`}>
             <div className={`${styles.leftmenu} col`}>
               <h1>Categories</h1>
-              <h2 onClick={getTasks}>Reset</h2>
+              <h2 class={styles.category} onClick={getTasks}>Reset</h2>
               {
                 uniqueCategories.map((task) => {
                   return (
                     <>
-                      <p onClick={() => filterCategories(task)}>{task}</p>
+                      <p class={styles.category} onClick={() => filterCategories(task)}>{task}</p>
                     </>
                   );
                 })

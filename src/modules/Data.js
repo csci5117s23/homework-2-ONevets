@@ -137,10 +137,12 @@ export async function addTask(authToken, owner_id, title, description, category)
           title: title,
           description: description,
           completed: false,
-          category: category,
-        }),
+          category: category
+        })
       }
-    )
+    ).then((result) => {
+      return result.status;
+    })
     
-    return await response.json();
+    
   };
