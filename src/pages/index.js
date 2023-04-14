@@ -1,11 +1,17 @@
 import Head from "next/head";
-import Image from "next/image";
 import { Inter } from "next/font/google";
-import { SignedIn, SignIn } from "@clerk/nextjs";
+import {
+  ClerkProvider,
+  SignedOut,
+  SignedIn,
+  RedirectToSignIn,
+  RedirectToUserProfile,
+} from "@clerk/clerk-react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home({ Component, pageProps }) {
+
   return (
     <>
       <Head>
@@ -15,7 +21,13 @@ export default function Home({ Component, pageProps }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <SignIn></SignIn>
+        <SignedIn>
+          <RedirectToSignIn />
+        </SignedIn>
+
+        <SignedOut>
+          <RedirectToSignIn />
+        </SignedOut>
       </main>
     </>
   );

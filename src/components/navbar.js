@@ -1,10 +1,16 @@
 import { Inter } from "next/font/google";
-import { SignedIn, SignIn } from "@clerk/nextjs";
+import { useAuth, useUser, UserButton, SignIn } from '@clerk/nextjs';
+import { useClerk } from "@clerk/clerk-react";
 const inter = Inter({ subsets: ["latin"] });
 import styles from "../styles/templates/navbar.module.css";
 import Link from "next/link";
 
-export default function Navbar() {
+
+export default function Navbar(props) {
+  const { signOut } = useClerk();
+  const { isLoaded, userId, sessionId, getToken } = useAuth();
+  const {user, isSignedIn} = useUser();
+
   return (
     <>
       <nav
@@ -33,17 +39,17 @@ export default function Navbar() {
                 </Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" href="/completed">
+                <Link className="nav-link" href="/done">
                   Completed
                 </Link>
               </li>
             </ul>
             <ul className={`navbar-nav ms-auto`}>
               <li className={`nav-item`}>
-                <a className="nav-link">Name here</a>
+                <a className="nav-link">{(isLoaded || isSignedIn) ? user.primaryEmailAddress.emailAddress : "" }</a>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" href="/">
+                <Link className="nav-link" href="/" onClick={() => signOut()}>
                   Sign out
                 </Link>
               </li>

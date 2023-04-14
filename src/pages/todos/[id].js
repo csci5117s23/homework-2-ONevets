@@ -2,11 +2,12 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Inter } from "next/font/google";
-import { SignedIn, SignIn } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
 import styles from "../../styles/to-do.module.css";
-import NavBar from "../../templates/navbar";
+import NavBar from "../../components/navbar";
 import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import * as db from "../../modules/Data";
 
 export default function EditToDos() {
   const router = useRouter();
@@ -20,8 +21,9 @@ export default function EditToDos() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
 
+  const { isLoaded, userId, sessionId, getToken } = useAuth();
+
   function handleCategory() {
-    console.log(uniqueCategories);
     if (wantCategory === true) {
       return (
         <>
@@ -49,33 +51,20 @@ export default function EditToDos() {
   }
 
   const getTask = async (taskId) => {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
+    const token = await getToken({ template: "codehooks" });
+    const data = await db.getTask(token, taskId);
     setTaskToEdit(data);
     setTitle(data.title);
     setDescription(data.description);
     setCategory(data.category);
     setLoading(false);
-    console.log(taskToEdit);
   };
 
   const getTasks = async () => {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    // update state -- configured earlier.
-    setTasks(data);
+    const token = await getToken({ template: "codehooks" });
+    const getTasksVar = await db.getTasks(token);
+
+    setTasks(getTasksVar);
     setLoading(false);
   };
 
@@ -85,37 +74,23 @@ export default function EditToDos() {
       newArr.push(item.category);
     });
     const setData = new Set(newArr);
-    console.log(Array.from(setData));
     setUniqueCategories(Array.from(setData));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    const fetchData = async () => {
-      const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT +
-          "/toDo/" + taskToEdit._id,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
-          },
-          body: JSON.stringify({
-            _id: taskToEdit._id,
-            owner_id: taskToEdit.owner_id,
-            title: title,
-            description: description,
-            completed: taskToEdit.completed,
-            category: category,
-          }),
-        }
-      ).then((res) => res);
-    };
-    fetchData();
+    const token = await getToken({ template: "codehooks" });
+    const getTasksVar = await db.editTask(
+      token,
+      taskToEdit._id,
+      taskToEdit.owner_id,
+      title,
+      description,
+      taskToEdit.completed,
+      category
+    );
 
-    // window.location.href = "/todos";
   }
 
   useEffect(() => {
@@ -125,7 +100,6 @@ export default function EditToDos() {
 
   useEffect(() => {
     getUniqueCategories(tasks);
-    
   }, [tasks.length]);
 
   if (loading) {
@@ -140,66 +114,64 @@ export default function EditToDos() {
           <link rel="icon" href="/favicon.ico" />
         </Head>
 
-        <NavBar
-        ></NavBar>
+        <NavBar></NavBar>
         <div className={`${styles.maxheight} container-fluid text-center`}>
-        <form id="editForm" onSubmit={(e) => handleSubmit(e)}>
-              <div className="modal-header">
-                <h1 className="modal-title fs-5" id="editModalLabel">
-                  Edit a reminder
-                </h1>
+          <form id="editForm" onSubmit={(e) => handleSubmit(e)}>
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="editModalLabel">
+                Edit a reminder
+              </h1>
+            </div>
+
+            <div className="modal-body">
+              <div className="mb-3">
+                <label htmlFor="title" className="form-label">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="title"
+                  name="title"
+                  aria-describedby="title"
+                  defaultValue={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                  }}
+                ></input>
+              </div>
+              <div className="mb-3">
+                <label htmlFor="description" className="form-label">
+                  Details
+                </label>
+                <textarea
+                  type="text"
+                  className="form-control"
+                  id="description"
+                  defaultValue={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                ></textarea>
               </div>
 
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label htmlFor="title" className="form-label">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="title"
-                    name="title"
-                    aria-describedby="title"
-                    defaultValue={title}
-                    onChange={(e) => {console.log(title); setTitle(e.target.value);}}
-                  ></input>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="description" className="form-label">
-                    Details
-                  </label>
-                  <textarea
-                    type="text"
-                    className="form-control"
-                    id="description"
-                    defaultValue={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  ></textarea>
-                </div>
-
-                <div className="mb-3">
-                  <input
-                    type="checkbox"
-                    onChange={() => setWantCategory(!wantCategory)}
-                    checked={wantCategory}
-                  ></input>
-                  <label className="form-label">Create new category?</label>
-                  <br></br>
-                  {handleCategory()}
-                </div>
+              <div className="mb-3">
+                <input
+                  type="checkbox"
+                  onChange={() => setWantCategory(!wantCategory)}
+                  checked={wantCategory}
+                ></input>
+                <label className="form-label">Create new category?</label>
+                <br></br>
+                {handleCategory()}
               </div>
+            </div>
 
-              <div className="modal-footer">
-                <Link href="/todos">Cancel</Link>
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+            <div className="modal-footer">
+              <Link href="/todos">Cancel</Link>
+              <button type="submit" className="btn btn-primary">
+                Save
+              </button>
+            </div>
+          </form>
         </div>
       </>
     );

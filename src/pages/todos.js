@@ -1,76 +1,43 @@
 import Head from "next/head";
 import { Inter } from "next/font/google";
-import { SignedIn, SignIn } from "@clerk/nextjs";
 const inter = Inter({ subsets: ["latin"] });
 import styles from "../styles/to-do.module.css";
-import NavBar from "../templates/navbar";
-import AddModal from "../templates/addmodal";
-import EditModal from "../templates/editmodal";
+import NavBar from "../components/navbar";
+import AddModal from "../components/addmodal";
+import * as db from "../modules/Data";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 
-export default function Todos({ Component, pageProps }) {
+
+export default function Todos() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uniqueCategories, setUniqueCategories] = useState([]);
-  const [onHomePage, setOnHomePage] = useState(true);
+  const { getToken } = useAuth();
 
   async function removeTask(taskId) {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + taskId,
-      {
-        method: "DELETE",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    ).then((res) => res);
+    const token = await getToken({template: "codehooks"});
+    const removeTaskVar = await db.removeTask(token, taskId); 
     getTasks();
   }
 
   async function filterCategories(category) {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/category/" + category,
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    // update state -- configured earlier.
-    setTasks(data);
+    const token = await getToken({template: "codehooks"});
+    const filterCategoriesVar = await db.filterCategories(token, category);
+    setTasks(filterCategoriesVar);
   }
 
   async function completeTask(task) {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo/" + task._id,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
-        },
-        body: JSON.stringify({
-          _id: task._id,
-          ownerId: task.ownerId,
-          title: task.title,
-          description: task.description,
-          category: task.category,
-          completed: !task.completed,
-        }),
-      }
-    );
+    const token = await getToken({template: "codehooks"});
+    const completeTaskVar = await db.completeTask(token, task)
   }
 
   const getTasks = async () => {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
-      {
-        method: "GET",
-        headers: { "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY },
-      }
-    );
-    const data = await response.json();
-    // update state -- configured earlier.
-    setTasks(data);
+    const token = await getToken({template: "codehooks"});
+    const getTasksVar = await db.getTasks(token);
+    
+    setTasks(getTasksVar);
     setLoading(false);
   };
 
@@ -80,17 +47,16 @@ export default function Todos({ Component, pageProps }) {
       newArr.push(item.category);
     });
     const setData = new Set(newArr);
-    console.log(Array.from(setData));
     setUniqueCategories(Array.from(setData));
   }
 
   useEffect(() => {
-    getTasks();
+    getTasks(); 
   }, []);
 
   useEffect(() => {
     getUniqueCategories(tasks);
-  }, [loading, uniqueCategories.length]);
+  }, [loading, tasks.length, uniqueCategories.length]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -110,17 +76,15 @@ export default function Todos({ Component, pageProps }) {
             <div className={`${styles.leftmenu} col`}>
               <h1>Categories</h1>
               <h2 onClick={getTasks}>Reset</h2>
-              {onHomePage ? (
-                uniqueCategories.map((task, key) => {
+              {
+                uniqueCategories.map((task) => {
                   return (
                     <>
                       <p onClick={() => filterCategories(task)}>{task}</p>
                     </>
                   );
                 })
-              ) : (
-                <p>To see full list again, Go to home on the navbar</p>
-              )}
+              }
             </div>
             <div className={`${styles.rightmenu} col-9`}>
               <h1>Tasks</h1>
@@ -137,10 +101,9 @@ export default function Todos({ Component, pageProps }) {
                         id="completedCheckbox"
                         name="completed"
                         defaultChecked={task.completed}
-                        onChange={(e) => completeTask(task)}
+                        onChange={() => completeTask(task)}
                       ></input>
                       <label htmlFor="completedCheckbox">
-                        {" "}
                         Check to complete
                       </label>
                       <br></br>

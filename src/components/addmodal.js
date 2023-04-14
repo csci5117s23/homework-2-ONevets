@@ -5,12 +5,17 @@ const inter = Inter({ subsets: ["latin"] });
 import Link from "next/link";
 import styles from "../styles/templates/addmodal.module.css";
 import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import * as db from "../modules/Data";
+
 
 export default function AddModal(props) {
   const [wantCategory, setWantCategory] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(props.uniqueCategories[0]);
+
+  const { isLoaded, userId, sessionId, getToken } = useAuth();
 
   function handleCategory() {
     if (wantCategory === true) {
@@ -45,28 +50,10 @@ export default function AddModal(props) {
     setCategory(props.uniqueCategories[0]);
   }, []);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    const fetchData = async () => {
-      const response = await fetch(
-        process.env.NEXT_PUBLIC_DB_API_ENDPOINT + "/toDo",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-apikey": process.env.NEXT_PUBLIC_DB_API_KEY,
-          },
-          body: JSON.stringify({
-            owner_id: "1",
-            title: title,
-            description: description,
-            completed: false,
-            category: category,
-          }),
-        }
-      ).then((res) => res);
-    };
-    fetchData();
+    const token = await getToken({template: "codehooks"});
+    const data = await db.addTask(token, userId, title, description, category); 
     props.getTasks();
   }
 

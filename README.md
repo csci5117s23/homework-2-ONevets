@@ -8,12 +8,14 @@ Libraries used:
 2. Bootstrap
 3. Codehooks
 4. Yup
+5. Clerk
+6. jwtdecode
 
 Please fill out all of the following sections to help us grade your submission:
 
 ## Student (to be completed individually)
 
-* First Last, sugia005@umn.edu
+* Marcellinus Sugiarto, sugia005@umn.edu
 
 ## Link to Site
 
@@ -21,6 +23,6 @@ Please fill out all of the following sections to help us grade your submission:
 
 ## Challenge Task
 
-* I started the challenge task: [yes/no]
-* I completed the challenge task: [yes/no]
+* I started the challenge task: yes
+* I completed the challenge task: yes
 
