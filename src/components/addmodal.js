@@ -53,12 +53,7 @@ export default function AddModal(props) {
   async function handleSubmit(e) {
     e.preventDefault();
     const token = await getToken({template: "codehooks"});
-    console.log(userId);
-    console.log(title);
-    console.log(description);
-    console.log(category);
     const data = await db.addTask(token, userId, title, description, category); 
-    console.log(data);
     props.getTasks();
   }
 
