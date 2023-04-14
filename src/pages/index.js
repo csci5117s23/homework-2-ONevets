@@ -1,5 +1,4 @@
 import Head from "next/head";
-import { Inter } from "next/font/google";
 import {
   ClerkProvider,
   SignedOut,
@@ -8,7 +7,6 @@ import {
   RedirectToUserProfile,
 } from "@clerk/clerk-react";
 
-const inter = Inter({ subsets: ["latin"] });
 
 export default function Home({ Component, pageProps }) {
 
@@ -22,7 +20,7 @@ export default function Home({ Component, pageProps }) {
       </Head>
       <main>
         <SignedIn>
-          <RedirectToSignIn />
+          <Component {...pageProps} />
         </SignedIn>
 
         <SignedOut>
