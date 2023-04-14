@@ -20,7 +20,7 @@ export default function Home({ Component, pageProps }) {
       </Head>
       <main>
         <SignedIn>
-          <Component {...pageProps} />
+          <RedirectToSignIn redirectUrl="/todos"/>
         </SignedIn>
 
         <SignedOut>
