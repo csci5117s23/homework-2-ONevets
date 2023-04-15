@@ -25,6 +25,8 @@ export default function AddModal(props) {
           <input
             onChange={(e) => setCategory(e.target.value)}
             type="text"
+            value={category}
+            required
           ></input>
         </>
       );
@@ -54,10 +56,14 @@ export default function AddModal(props) {
     e.preventDefault();
     const token = await getToken({template: "codehooks"});
     const data = await db.addTask(token, userId, title, description, category); 
+    handleButton();
     props.getTasks();
   }
 
   function handleButton() {
+    setTitle("");
+    setDescription("");
+    setCategory("");
     document.getElementById("addForm").reset();
   }
 
@@ -97,6 +103,8 @@ export default function AddModal(props) {
                     name="title"
                     aria-describedby="title"
                     onChange={(e) => setTitle(e.target.value)}
+                    value={title}
+                    required
                   ></input>
                 </div>
                 <div className="mb-3">
@@ -108,6 +116,8 @@ export default function AddModal(props) {
                     className="form-control"
                     id="description"
                     onChange={(e) => setDescription(e.target.value)}
+                    value={description}
+                    required
                   ></textarea>
                 </div>
 
@@ -134,7 +144,6 @@ export default function AddModal(props) {
                 <button
                   data-bs-dismiss="modal"
                   aria-label="Close"
-                  onClick={handleButton}
                   type="submit"
                   className="btn btn-primary"
                 >
